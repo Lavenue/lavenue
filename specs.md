@@ -1,8 +1,9 @@
-<center>
+<div align="center">
 <img width=200 src="https://raw.githubusercontent.com/tienne-B/lavenue/master/logo.svg?sanitize=true">
 
 # Lavenue
-</center>
+</div>
+
 Pour la bonne gestion et sémantique d'assemblée déliberante, *Lavenue* est un logiciel proposé pour faciliter l'utilisation du *Code Lespérance* (CL) et d'automatiser l'application des décisions faites.
 
 ## Introduction
