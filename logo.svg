@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="14 11.2 41 54">
 	<defs><style>path {fill:none;stroke-width:5;stroke-linecap:round;}</style></defs>
 	<path id="mg" d="M55.1,20.5a30,30 0 0 1 0,35.6" stroke="#0ACF80" transform="translate(-31.1 0)"/>
-	<path id="mb" d="M55.1,20.5a30,30 0 0 1 0,35.6" stroke="#0AB0CF" transform="translate(100 76.5) scale(-1 -1)"/>
+	<path id="mb" d="M55.1,20.5a30,30 0 0 1 0,35.6" stroke="#0AB0CF" transform="translate(100 76.6) scale(-1 -1)"/>
 	<path id="sg" d="M48,27.6a19.5,19.5 0 0 1 0,21.4" stroke="#0ACF80" transform="translate(-31.1 0)"/>
-	<path id="sb" d="M48,27.6a19.5,19.5 0 0 1 0,21.4" stroke="#0AB0CF" transform="translate(100 76.5) scale(-1 -1)"/>
+	<path id="sb" d="M48,27.6a19.5,19.5 0 0 1 0,21.4" stroke="#0AB0CF" transform="translate(100 76.6) scale(-1 -1)"/>
 	<path id="bg" d="M61.6,14a38.8,38.8 0 0 1 0,48.6" stroke="#0ACF80" transform="translate(-31.1 0)"/>
-	<path id="bb" d="M61.6,14a38.8,38.8 0 0 1 0,48.6" stroke="#0AB0CF" transform="translate(100 76.5) scale(-1 -1)"/>
+	<path id="bb" d="M61.6,14a38.8,38.8 0 0 1 0,48.6" stroke="#0AB0CF" transform="translate(100 76.6) scale(-1 -1)"/>
 </svg>
