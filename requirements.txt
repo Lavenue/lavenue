@@ -1,1 +1,4 @@
 Django==3.2.3
+
+# For Debug
+django-debug-toolbar
