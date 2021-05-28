@@ -17,7 +17,10 @@ import debug_toolbar
 from django.contrib import admin
 from django.urls import include, path
 
+from organisations.views import AgendaView
+
 urlpatterns = [
 	path('admin/', admin.site.urls),
 	path('__debug__/', include(debug_toolbar.urls)),
+    path('<slug:organisation_slug>/<slug:slug>/agenda/', AgendaView.as_view()),
 ]

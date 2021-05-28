@@ -77,3 +77,9 @@ class Point(models.Model):
 		verbose_name_plural = _("points")
 
 		unique_together = (('session', 'parent', 'seq'),)
+
+	@property
+	def children(self):
+		if not hasattr(self, '_children'):
+			self._children = type(self).objects.filter(parent=self).order_by('seq')
+		return self._children

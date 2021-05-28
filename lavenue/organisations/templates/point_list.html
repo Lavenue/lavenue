@@ -1,0 +1,10 @@
+{% for point in points %}
+	<li value="{{ point.seq}}">
+		{{ point.name }}
+		{% if point.children|length %}
+			<ol>
+				{% include "point_list.html" with points=point.children %}
+			</ol>
+		{% endif %}
+	</li>
+{% endfor %}

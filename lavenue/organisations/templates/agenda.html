@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktrans trimmed with meeting=meeting.name %}Agenda for {{ meeting }}{% endblocktrans %}{% endblock %}
+
+{% block content %}
+<h1>{{ meeting.name }}—{{ meeting.organisation.name }}</h1>
+<p><i>{% trans "Permalink:" %} <a href="{{ request.path }}">{{ request.build_absolute_uri }}</a></i></p>
+
+{% for session in sessions %}
+<h2 id="session-{{ forloop.counter }}">{{ session.start }}</h2>
+<ol>
+	{% include "point_list.html" with points=session.points %}
+</ol>
+{% endfor %}
+{% endblock %}
