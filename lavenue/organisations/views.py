@@ -13,8 +13,12 @@ class BreakRecursionException(Exception):
 class AgendaView(TemplateView):
 	template_name = 'agenda.html'
 
-	def create_point_tree(self):
-		points = Point.objects.all().order_by('parent', 'seq')
+	def create_point_tree(self, meeting):
+		"""Get all points for meeting and then treat as a tree with an
+		imaginary root. As the objects are shared (call by sharing without
+		copies), they can be grouped by their immediate parent to make a list of
+		children."""
+		points = Point.objects.filter(session__meeting=meeting).order_by('parent', 'seq')
 		p_dict = {p.id: p for p in points}
 		for p in points:
 			p._children = []
@@ -30,6 +34,10 @@ class AgendaView(TemplateView):
 
 	@staticmethod
 	def find_break(session, tree, path):
+		"""Uses call by sharing with the path parameter to return the "path",
+		thus the indices of the parent nodes to the first node for a different
+		session. This is a pre-order DFS tree traversal. As we only want the
+		first, we call (and catch) an exception to break."""
 		for i, c in enumerate(tree.children):
 			if c.session_id != session:
 				path.append(i)
@@ -39,7 +47,15 @@ class AgendaView(TemplateView):
 			path.pop()
 
 	def get_sessions(self, meeting):
-		tree = self.create_point_tree()
+		"""Associate branches of the tree to specific sessions.
+
+		This is first done by sorting the root points to the session. Then, the
+		last point of each session is studied to determine whether some of their
+		subpoints are in the next session. If so, that point is split so that
+		the latter session keeps the titles of the points leading up to the
+		first point to discuss, and removes that point (including children) from
+		the former."""
+		tree = self.create_point_tree(meeting)
 		sessions = Session.objects.filter(meeting=meeting).order_by('start')
 		s_dict = {s.id: s for s in sessions}
 		for s in sessions:
@@ -56,6 +72,9 @@ class AgendaView(TemplateView):
 				except BreakRecursionException:
 					pass
 
+			"""Go through the path given and deep-copy the point in order to lop
+			subpoints that are before or after the session without affecting the
+			other."""
 			path_len = len(path)
 			if len(path) > 0 and not (len(path) == 1 and path[0] == 0):
 				pass_point = deepcopy(session.points[-1])
