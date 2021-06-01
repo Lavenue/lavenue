@@ -2,6 +2,9 @@ from copy import deepcopy
 
 from django.views.generic import TemplateView
 
+from utils.views import ModelFormSetView
+
+from .forms import PointForm
 from .models import Meeting, Point, Session
 
 
@@ -79,3 +82,69 @@ class AgendaView(TemplateView):
 			'organisation').get(organisation__slug=self.kwargs['organisation_slug'], slug=self.kwargs['slug'])
 		context['sessions'] = self.get_sessions(context['meeting'])
 		return context
+
+
+class CreateAgendaView(ModelFormSetView):
+	template_name = 'create_agenda.html'
+
+	formset_factory_kwargs = {
+		'form': PointForm,
+		'can_delete': True,
+		'extra': 10,
+	}
+	formset_model = Point
+
+	class FalseQueryset(list):
+		ordered = True
+
+	@property
+	def meeting(self):
+		if not hasattr(self, '_meeting'):
+			self._meeting = Meeting.objects.prefetch_related('session_set').select_related('organisation').get(
+				organisation__slug=self.kwargs['organisation_slug'],
+				slug=self.kwargs['slug'],
+			)
+		return self._meeting
+
+	@staticmethod
+	def traverse_tree_and_order(points, path, order):
+		for point in points:
+			path.append(str(point.seq))
+			order.append(point)
+			point.number = ".".join(path)
+			CreateAgendaView.traverse_tree_and_order(point.children, path, order)
+			path.pop()
+
+	def get_formset_queryset(self):
+		points = self.meeting.create_point_tree()
+		path = []
+		order = CreateAgendaView.FalseQueryset()
+		CreateAgendaView.traverse_tree_and_order(points, path, order)
+		return order
+
+	def get_formset_kwargs(self):
+		return {'form_kwargs': {'session_choices': self.meeting.session_set.all().order_by('start')}}
+
+	def formset_valid(self, formset):
+		instances = formset.save(commit=False)
+		instances.sort(key=lambda p: tuple(int(n) for n in p.number.split(".")))
+		p_dict = {p.number: p for p in instances}
+		missing_parent = []
+		for p in instances:
+			if p.number[-1] == ".":  # Remove trailing dot if inserted accidentally
+				p.number = p.number[:-1]
+			p_dict[p.number] = p
+			path = p.number.split(".")
+			if len(path) > 1:
+				try:
+					p.parent = p_dict[".".join(p.number.split(".")[:-1])]
+				except KeyError:
+					missing_parent.append(p)
+					continue
+			p.seq = path[-1]
+			p.save()
+
+		for point in formset.deleted_objects:
+			point.delete()
+
+		return super().formset_valid(formset)

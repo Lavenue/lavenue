@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktrans trimmed with meeting=meeting.name %}Create agenda{% endblocktrans %}{% endblock %}
+
+{% block content %}
+{% trans "Save" as save_text %}
+{% include "components/forms/formset.html" %}
+{% endblock %}
