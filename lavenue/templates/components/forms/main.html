@@ -1,0 +1,17 @@
+{% if form.errors %}
+	{% include "components/forms/errors.html" with errors=form.non_field_errors %}
+{% endif %}
+
+{% if form.visible_fields %}
+	{% for field in form.visible_fields %}
+		{% include "components/forms/field.html" %}
+	{% endfor %}
+{% else %}
+	{% for field in form %}
+		{% include "components/forms/field.html" %}
+	{% endfor %}
+{% endif %}
+
+{% for field in form.hidden_fields %}
+	{{ field }}
+{% endfor %}

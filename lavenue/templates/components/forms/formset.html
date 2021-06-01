@@ -1,0 +1,17 @@
+{% load i18n %}
+
+<form method="POST">
+	{% csrf_token %}
+
+	{% if formset.errors %}
+		{% include "components/forms/errors.html" with errors=formset.non_form_errors %}
+	{% endif %}
+	{{ formset.management_form }}
+
+	{% for form in formset %}
+		{% include "components/forms/main.html" %}
+		<hr />
+	{% endfor %}
+	<button type="submit" name="submit">{{ save_text }}</button>
+	<button type="submit" name="add_more">{% trans 'Save and Add More' %}</button>
+</form>
