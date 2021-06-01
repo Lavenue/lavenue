@@ -1,3 +1,6 @@
+from itertools import groupby
+from operator import attrgetter
+
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -38,6 +41,26 @@ class Meeting(models.Model):
 	@property
 	def ended(self):
 		return not self.session_set.filter(ended_at__isnull=True).exists()
+
+	def create_point_tree(self):
+		"""Get all points for meeting and then treat as a tree with an
+		imaginary root. As the objects are shared (call by sharing without
+		copies), they can be grouped by their immediate parent to make a list of
+		children."""
+		pid = attrgetter('parent_id')
+		points = Point.objects.filter(session__meeting=self).order_by('parent', 'seq')
+		p_dict = {p.id: p for p in points}
+		for p in points:
+			p._children = []
+
+		root = []
+		for parent, children in groupby(points, key=pid):
+			if parent is None:
+				root = list(children)
+				continue
+			p_dict[parent]._children = list(children)
+
+		return root
 
 
 class Session(models.Model):

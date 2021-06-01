@@ -1,5 +1,5 @@
 {% for point in points %}
-	<li value="{{ point.seq}}">
+	<li value="{{ point.seq }}">
 		{{ point.name }}
 		{% if point.children|length %}
 			<ol>
