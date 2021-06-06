@@ -1,7 +1,10 @@
 from copy import copy, deepcopy
 from itertools import groupby
 
+from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
+
+from utils.mixins import OrganisationMixin
 
 from .models import Meeting, Point, Session
 
@@ -10,15 +13,24 @@ class BreakRecursionException(Exception):
 	pass
 
 
-class AgendaView(TemplateView):
+class AgendaView(OrganisationMixin, TemplateView):
 	template_name = 'agenda.html'
 
-	def create_point_tree(self, meeting):
+	def get_page_title(self):
+		return _("Agenda for %(meeting)s") % {'meeting': self.meeting.name}
+
+	@property
+	def meeting(self):
+		if not hasattr(self, '_meeting'):
+			self._meeting = Meeting.objects.select_related('organisation').get(organisation=self.organisation, slug=self.kwargs['slug'])
+		return self._meeting
+
+	def create_point_tree(self):
 		"""Get all points for meeting and then treat as a tree with an
 		imaginary root. As the objects are shared (call by sharing without
 		copies), they can be grouped by their immediate parent to make a list of
 		children."""
-		points = Point.objects.filter(session__meeting=meeting).order_by('parent', 'seq')
+		points = Point.objects.filter(session__meeting=self.meeting).order_by('parent', 'seq')
 		p_dict = {p.id: p for p in points}
 		for p in points:
 			p._children = []
@@ -46,7 +58,7 @@ class AgendaView(TemplateView):
 			AgendaView.find_break(session, c, path)
 			path.pop()
 
-	def get_sessions(self, meeting):
+	def get_sessions(self):
 		"""Associate branches of the tree to specific sessions.
 
 		This is first done by sorting the root points to the session. Then, the
@@ -55,8 +67,8 @@ class AgendaView(TemplateView):
 		the latter session keeps the titles of the points leading up to the
 		first point to discuss, and removes that point (including children) from
 		the former."""
-		tree = self.create_point_tree(meeting)
-		sessions = Session.objects.filter(meeting=meeting).order_by('start')
+		tree = self.create_point_tree()
+		sessions = Session.objects.filter(meeting=self.meeting).order_by('start')
 		s_dict = {s.id: s for s in sessions}
 		for s in sessions:
 			s.points = []
@@ -95,7 +107,6 @@ class AgendaView(TemplateView):
 
 	def get_context_data(self, **kwargs):
 		context = super().get_context_data(**kwargs)
-		context['meeting'] = Meeting.objects.select_related(
-			'organisation').get(organisation__slug=self.kwargs['organisation_slug'], slug=self.kwargs['slug'])
-		context['sessions'] = self.get_sessions(context['meeting'])
+		context['meeting'] = self.meeting
+		context['sessions'] = self.get_sessions()
 		return context
