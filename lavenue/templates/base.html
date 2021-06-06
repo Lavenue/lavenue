@@ -1,9 +1,22 @@
-<!DOCTYPE html>
-<html>
+{% load static i18n %}<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
 	<meta charset="utf-8">
 	<title>{% block title %}{% endblock %}</title>
+	<meta name="description" content="{{ meta_description }}" />
+	<meta property="og:description" content="{{ meta_description }}" />
+	<meta property="og:image" content="{% static 'logo-social.png' %}" />
+
+	<link rel="icon" type="image/png" href="{% static 'logo-32x32.png' %}" sizes="32x32" />
+	<link rel="icon" type="image/png" href="{% static 'logo-16x16.png' %}" sizes="16x16" />
+	<link rel="mask-icon" href="{% static 'safari-tab.svg' %}" color="rgb(10, 176, 207)">
+
+	<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+	{% block extra-css %}{% endblock %}
+	{% block extra-head %}{% endblock %}
 </head>
+
 <body>
 {% block content %}{% endblock %}
 </body>
