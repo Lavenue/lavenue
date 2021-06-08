@@ -18,9 +18,14 @@ from django.contrib import admin
 from django.urls import include, path
 
 from organisations.views import AgendaView
+from users.views import CreateAccountView
 
 urlpatterns = [
 	path('admin/', admin.site.urls),
+    path('accounts/', include([
+        path('', include('django.contrib.auth.urls')),
+        path('create/', CreateAccountView.as_view(), name='create-account'),
+    ])),
 	path('__debug__/', include(debug_toolbar.urls)),
     path('<slug:organisation_slug>/<slug:slug>/agenda/', AgendaView.as_view()),
 ]

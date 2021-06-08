@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'organisations',
     'speakers',
     'motions',
+    'users',
 ]
 
 MIDDLEWARE = [
