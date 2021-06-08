@@ -30,6 +30,16 @@
 </head>
 
 <body>
-{% block content %}{% endblock %}
+<header>
+	{% block header %}{% endblock %}
+</header>
+
+<main>
+	{% block content %}{% endblock %}
+</main>
+
+<footer>
+	{% block footer %}{% include "footer.html" %}{% endblock footer %}
+</footer>
 </body>
 </html>
