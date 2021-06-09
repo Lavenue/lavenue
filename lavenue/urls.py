@@ -22,5 +22,9 @@ from organisations.views import AgendaView
 urlpatterns = [
 	path('admin/', admin.site.urls),
 	path('__debug__/', include(debug_toolbar.urls)),
-    path('<slug:organisation_slug>/<slug:slug>/agenda/', AgendaView.as_view()),
+    path('<slug:organisation_slug>/', include([
+        path('<slug:meeting_slug>/', include([
+            path('agenda/', AgendaView.as_view(), name='meeting-agenda'),
+        ])),
+    ])),
 ]

@@ -22,7 +22,8 @@ class AgendaView(OrganisationMixin, TemplateView):
 	@property
 	def meeting(self):
 		if not hasattr(self, '_meeting'):
-			self._meeting = Meeting.objects.select_related('organisation').get(organisation=self.organisation, slug=self.kwargs['slug'])
+			self._meeting = Meeting.objects.select_related('organisation').get(
+				organisation=self.organisation, slug=self.kwargs['meeting_slug'])
 		return self._meeting
 
 	def create_point_tree(self):
