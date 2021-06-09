@@ -14,6 +14,7 @@
 
 \RequirePackage{moresize}
 \RequirePackage{titlesec}
+\RequirePackage{parskip}
 
 \RequirePackage{fancyhdr}
 \pagestyle{fancy}
@@ -58,8 +59,6 @@ Pour les assemblées délibérantes
 
 \RequirePackage{hyperref}
 \hypersetup{
-	%unicode,
-	pdfauthor={LiDUC},
 	bookmarks=true,
 }
 
