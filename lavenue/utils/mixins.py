@@ -1,4 +1,4 @@
-from django.utils.translation import gettext as _
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic.base import ContextMixin
 
 from organisations.models import Organisation
@@ -33,3 +33,8 @@ class OrganisationMixin(ViewTitlesMixin):
 	def get_context_data(self, **kwargs):
 		kwargs['organisation'] = self.organisation
 		return super().get_context_data(**kwargs)
+
+
+class OrganisationManagerMixin(UserPassesTestMixin, OrganisationMixin):
+	def test_func(self):
+		return self.request.user.is_superuser or self.organisation.managers.filter(pk=self.request.user.pk).exists()

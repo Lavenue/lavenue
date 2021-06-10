@@ -1,16 +1,53 @@
 from copy import copy, deepcopy
 from itertools import groupby
 
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.urls import reverse
 from django.utils.translation import gettext as _
-from django.views.generic import TemplateView
+from django.views.generic import CreateView, FormView, TemplateView
 
-from utils.mixins import OrganisationMixin
+from speakers.models import Participant
+from utils.mixins import OrganisationManagerMixin, OrganisationMixin
 
+from .forms import CreateMeetingForm, CreateOrganisationForm
 from .models import Meeting, Point, Session
 
 
 class BreakRecursionException(Exception):
 	pass
+
+
+class CreateMeetingView(OrganisationManagerMixin, FormView):
+	template_name = 'create-meeting.html'
+	form_class = CreateMeetingForm
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		kwargs['organisation'] = self.organisation
+		return kwargs
+
+	def form_valid(self, form):
+		self.meeting = form.save(commit=True)
+		user = self.request.user
+		meeting.participant_set.create(name=user.username, user=user, role=Participant.ROLE_PRESIDENT)
+		return super().form_valid(form)
+
+
+class CreateOrganisationView(LoginRequiredMixin, CreateView):
+	template_name = 'create-organisation.html'
+	form_class = CreateOrganisationForm
+
+	def get_form_kwargs(self):
+		kwargs = super().get_form_kwargs()
+		kwargs['user'] = self.request.user
+		return kwargs
+
+	def get_success_url(self):
+		return reverse('organisation-homepage', kwargs={'organisation_slug': self.object.slug})
+
+
+class OrganisationHomepageView(OrganisationMixin, TemplateView):
+	template_name = 'organisation-homepage.html'
 
 
 class AgendaView(OrganisationMixin, TemplateView):

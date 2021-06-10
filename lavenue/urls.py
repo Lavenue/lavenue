@@ -17,12 +17,16 @@ import debug_toolbar
 from django.contrib import admin
 from django.urls import include, path
 
-from organisations.views import AgendaView
+from organisations.views import AgendaView, CreateMeetingView, CreateOrganisationView, OrganisationHomepageView
 
 urlpatterns = [
 	path('admin/', admin.site.urls),
 	path('__debug__/', include(debug_toolbar.urls)),
+
+    path('create-organisation/', CreateOrganisationView.as_view(), name='create-organisation'),
     path('<slug:organisation_slug>/', include([
+        path('', OrganisationHomepageView.as_view(), name='organisation-homepage'),
+        path('create-meeting/', CreateMeetingView.as_view(), name='create-meeting'),
         path('<slug:meeting_slug>/', include([
             path('agenda/', AgendaView.as_view(), name='meeting-agenda'),
         ])),

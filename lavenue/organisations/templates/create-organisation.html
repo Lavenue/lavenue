@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block page-title %}{% trans "Create Organisation" %}{% endblock %}
+
+{% block content %}
+<form method="post">
+	{% csrf_token %}
+	{{ form.as_ul }}
+	<button type="submit">{% trans "Create Organisation" %}</button>
+</form>
+{% endblock %}
