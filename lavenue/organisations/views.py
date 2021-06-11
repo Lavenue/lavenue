@@ -29,7 +29,7 @@ class CreateMeetingView(OrganisationManagerMixin, FormView):
 	def form_valid(self, form):
 		self.meeting = form.save(commit=True)
 		user = self.request.user
-		meeting.participant_set.create(name=user.username, user=user, role=Participant.ROLE_PRESIDENT)
+		self.meeting.participant_set.create(name=user.username, user=user, role=Participant.ROLE_PRESIDENT)
 		return super().form_valid(form)
 
 
