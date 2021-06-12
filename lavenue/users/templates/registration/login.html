@@ -2,7 +2,13 @@
 {% load i18n %}
 
 {% block page-title %}{% trans "Login" %}{% endblock %}
-{% block head-title %}{% endblock %}
+
+{% block nav %}
+<ul>
+	<li><a href="{% url 'create-account' %}">{% trans "Create account" %}</a></li>
+	<li><a href="{% url 'password_reset' %}">{% trans "Forgot my password" %}</a></li>
+</ul>
+{% endblock %}
 
 {% block content %}
 <form method="post">
