@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block page-title %}{% trans "Create Account" %}{% endblock %}
+
+{% block content %}
+<form method="post">
+	{% csrf_token %}
+	{{ form.as_ul }}
+	<button type="submit">{% trans "Create Account" %}</button>
+</form>
+{% endblock %}
