@@ -29,7 +29,7 @@ class VoteAdmin(admin.ModelAdmin):
 
 @admin.register(Ballot)
 class BallotAdmin(admin.ModelAdmin):
-	list_display = ('participant__name', 'vote__motion__proposition', 'cast', 'worth')
+	list_display = ('participant', 'vote', 'cast', 'worth')
 
 	def get_queryset(self, request):
 		return super().get_queryset(request).select_related('participant', 'vote__motion')
