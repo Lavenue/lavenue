@@ -19,6 +19,7 @@ from django.urls import include, path
 
 from organisations.views import AgendaView, CreateMeetingView, CreateOrganisationView, OrganisationHomepageView
 from users.views import CreateAccountView
+from speakers.views import intervention_create_view, motion_create_view, vote_create_view
 
 urlpatterns = [
 	path('admin/', admin.site.urls),
@@ -36,4 +37,7 @@ urlpatterns = [
             path('agenda/', AgendaView.as_view(), name='meeting-agenda'),
         ])),
     ])),
+    path('secretary/', intervention_create_view),
+    path('secretary/', motion_create_view),
+    path('secretary/', vote_create_view),
 ]
