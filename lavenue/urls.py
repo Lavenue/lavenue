@@ -37,7 +37,7 @@ urlpatterns = [
             path('agenda/', AgendaView.as_view(), name='meeting-agenda'),
         ])),
     ])),
-    path('secretary/', intervention_create_view),
-    path('secretary/', motion_create_view),
-    path('secretary/', vote_create_view),
+    path('secretary/', InterventionView.as_view()),
+    # path('secretary/', motion_create_view),
+    # path('secretary/', vote_create_view),
 ]

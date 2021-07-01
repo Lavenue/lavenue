@@ -1,38 +1,18 @@
 from django.shortcuts import render
-
+from django.views import View
 from .forms import InterventionForm, MotionForm, VoteForm
 
 # Create your views here.
+class InterventionView(View):
+    template_name = 'intervention_create.html'
+    form_class = InterventionForm
+    def post(self, request):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            form.save()
+            form = self.form_class()
 
-def intervention_create_view(request):
-    form = InterventionForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        form = InterventionForm()
-
-    context = {
-        'form': form
-    }
-    return render(request, "intervention_create.html", context)
-
-def motion_create_view(request):
-    form = MotionForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        form = MotionForm()
-
-    context = {
-        'form': form
-    }
-    return render(request, "motion_create.html", context)
-
-def vote_create_view(request):
-    form = VoteForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        form = VoteForm()
-
-    context = {
-        'form': form
-    }
-    return render(request, "vote_create.html", context)
+        context = {
+            'form': form
+        }
+        return render(request, self.template_name, context)

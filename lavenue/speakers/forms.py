@@ -1,22 +1,9 @@
 from django.forms import ModelForm
 
-from .models import Intervention, Participant
-from motions.models import Motion, Vote
+from .models import Intervention
+
 
 class InterventionForm(forms.ModelForm):
-    class Meta:
-        model = Intervention
-        fields = [
-            'proposer',
-            'seconder',
-            'point',
-            'supplants',
-            'proposition',
-            'preamble',
-            'operative'
-        ]
-
-class MotionForm(forms.ModelForm):
     class Meta:
         model = Intervention
         fields = [
@@ -25,19 +12,6 @@ class MotionForm(forms.ModelForm):
             'motion',
             'time_asked',
             'time_granted',
-            'sequence_number',
+            'seq',
             'summary'
-        ]
-
-class VoteForm(forms.ModelForm):
-    class Meta:
-        model = Intervention
-        fields = [
-            'motion',
-            'requester',
-            'secret',
-            'favour',
-            'oppose',
-            'abstain',
-            'passed'
         ]
