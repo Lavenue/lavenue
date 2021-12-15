@@ -7,10 +7,10 @@ from .models import *
 
 @admin.register(Motion)
 class MotionAdmin(admin.ModelAdmin):
-	list_display = ('proposition', 'point', 'proposer', 'seconder')
+	list_display = ('proposition', 'point', 'proposer')
 
 	def get_queryset(self, request):
-		return super().get_queryset(request).select_related('proposer', 'seconder', 'point')
+		return super().get_queryset(request).select_related('proposer', 'point')
 
 	def formfield_for_foreignkey(self, db_field, request, **kwargs):
 		if db_field.name == "point":
@@ -24,7 +24,7 @@ class VoteAdmin(admin.ModelAdmin):
 	list_editable = ('favour', 'oppose', 'abstain', 'passed')
 
 	def get_queryset(self, request):
-		return super().get_queryset(request).select_related('motion__proposer', 'motion__seconder', 'requester')
+		return super().get_queryset(request).select_related('motion__proposer', 'requester')
 
 
 @admin.register(Ballot)

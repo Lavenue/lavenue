@@ -8,18 +8,21 @@ from .rulebooks import get_all_prop_choices
 class Motion(models.Model):
 	proposer = models.ForeignKey('speakers.Participant', models.PROTECT, related_name='proposed_set',
 		verbose_name=_("proposer"))
-	seconder = models.ForeignKey('speakers.Participant', models.PROTECT, null=True, blank=True, related_name='seconded_set',
-		verbose_name=_("seconder"))
+	sponsors = models.ManyToManyField('speakers.Participant', blank=True,
+		verbose_name=_("sponsors"))
 
+	introduced = models.ForeignKey('speakers.Intervention', models.CASCADE, null=True, blank=True,
+		verbose_name=_("introduced in"), related_name='introduced_set')
 	point = models.ForeignKey('organisations.Point', models.CASCADE, verbose_name=_("point"))
-	supplants = models.ForeignKey('self', models.CASCADE, verbose_name=_("supplants"))
+	supplants = models.ForeignKey('self', models.CASCADE, blank=True, null=True, verbose_name=_("supplants"))
+	seq = models.PositiveIntegerField(null=True, blank=True, verbose_name=_("sequence"))
 
 	proposition = models.CharField(max_length=3, choices=get_all_prop_choices(), verbose_name=_("proposition"))
 	preamble = models.TextField(blank=True, verbose_name=_("preamble"))
 	operative = models.TextField(verbose_name=_("operative clauses"))
 
 	def __str__(self):
-		return "%s (%s): %s" % (self.proposer, self.seconder, self.get_proposition_display())
+		return "%s: %s" % (self.proposer, self.get_proposition_display())
 
 	class Meta:
 		verbose_name = _("motion")
