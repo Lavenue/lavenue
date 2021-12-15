@@ -37,8 +37,8 @@ class Intervention(models.Model):
 	point = models.ForeignKey('organisations.Point', models.CASCADE, verbose_name=_("point"))
 	motion = models.ForeignKey('motions.Motion', models.CASCADE, blank=True, null=True, verbose_name=_("motion"))
 
-	time_asked = models.DateTimeField(auto_now=False, verbose_name=_("time asked"))
-	time_granted = models.DateTimeField(auto_now=False, verbose_name=_("time granted"))
+	time_asked = models.DateTimeField(auto_now=False, blank=True, null=True, verbose_name=_("time asked"))
+	time_granted = models.DateTimeField(auto_now=False, blank=True, null=True, verbose_name=_("time granted"))
 	seq = models.PositiveIntegerField(verbose_name=("sequence number"))
 
 	summary = models.TextField(blank=True, verbose_name=_("summary"))
