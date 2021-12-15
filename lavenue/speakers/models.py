@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -16,12 +17,12 @@ class Participant(models.Model):
 	meeting = models.ForeignKey('organisations.Meeting', models.CASCADE, verbose_name=_("meeting"))
 	name = models.CharField(max_length=100, verbose_name=_("name"))
 
-	# Need to protect the model to prevent changes in previous meetings
-	user = models.ForeignKey(settings.AUTH_USER_MODEL, models.PROTECT, verbose_name=_("user"))
 	role = models.CharField(max_length=1, choices=ROLE_CHOICES, default=ROLE_MEMBER, verbose_name=_("role"))
 
-	voting = models.BooleanField(default=False, verbose_name=_("voting"))
+	voting = models.IntegerField(default=0, verbose_name=_("voting power"))
 	speaking = models.BooleanField(default=False, verbose_name=_("speaking"))
+
+	users = models.ManyToManyField(get_user_model(), verbose_name=_("users"))
 
 	def __str__(self):
 		return self.name
@@ -29,8 +30,6 @@ class Participant(models.Model):
 	class Meta:
 		verbose_name = _("participant")
 		verbose_name_plural = _("participants")
-
-		unique_together = (('meeting', 'user'),)
 
 
 class Intervention(models.Model):
