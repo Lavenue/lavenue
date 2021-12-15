@@ -79,7 +79,11 @@ class Point(models.Model):
 		unique_together = (('session', 'parent', 'seq'),)
 
 	@property
-	def children(self):
+	def continued(self):
+		return getattr(self, '_continued', False)
+
+	@property
+	def subpoints(self):
 		if not hasattr(self, '_children'):
 			self._children = type(self).objects.filter(parent=self).order_by('seq')
 		return self._children
