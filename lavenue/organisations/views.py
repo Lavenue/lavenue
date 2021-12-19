@@ -2,73 +2,62 @@ from copy import copy, deepcopy
 from itertools import groupby
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Prefetch
 from django.urls import reverse
 from django.utils.translation import gettext as _
 from django.views.generic import CreateView, FormView, TemplateView
 
-from speakers.models import Participant
+from motions.models import Motion
+from speakers.models import Intervention, Participant
 from utils.mixins import OrganisationManagerMixin, OrganisationMixin
 
 from .forms import CreateMeetingForm, CreateOrganisationForm
-from .models import Meeting, Point, Session
+from .models import Meeting, Point, Session, Organisation
+from .serializers import AgendaSerializer, MinutesSerializer, MeetingSerializer
+
+from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
+
+
+class OrgManagerOrReadOnlyPermission(BasePermission):
+	message = "org.notmanager"
+
+	def has_permission(self, request, view):
+		return (request.user and view.organisation.managers.includes(request.user)) or request.method in SAFE_METHODS
+
+
+class OrganisationViewSet(ModelViewSet):
+	pass
 
 
 class BreakRecursionException(Exception):
 	pass
 
 
-class CreateMeetingView(OrganisationManagerMixin, FormView):
-	template_name = 'create-meeting.html'
-	form_class = CreateMeetingForm
-
-	def get_form_kwargs(self):
-		kwargs = super().get_form_kwargs()
-		kwargs['organisation'] = self.organisation
-		return kwargs
-
-	def form_valid(self, form):
-		self.meeting = form.save(commit=True)
-		user = self.request.user
-		self.meeting.participant_set.create(name=user.username, user=user, role=Participant.ROLE_PRESIDENT)
-		return super().form_valid(form)
-
-
-class CreateOrganisationView(LoginRequiredMixin, CreateView):
-	template_name = 'create-organisation.html'
-	form_class = CreateOrganisationForm
-
-	def get_form_kwargs(self):
-		kwargs = super().get_form_kwargs()
-		kwargs['user'] = self.request.user
-		return kwargs
-
-	def get_success_url(self):
-		return reverse('organisation-homepage', kwargs={'organisation_slug': self.object.slug})
-
-
-class OrganisationHomepageView(OrganisationMixin, TemplateView):
-	template_name = 'organisation-homepage.html'
-
-
-class AgendaView(OrganisationMixin, TemplateView):
-	template_name = 'agenda.html'
-
-	def get_page_title(self):
-		return _("Agenda for %(meeting)s") % {'meeting': self.meeting.name}
+class AgendaViewSet(ModelViewSet):
+	serializer_class = AgendaSerializer
+	lookup_field = 'slug'
+	lookup_url_kwarg = 'meeting'
 
 	@property
-	def meeting(self):
-		if not hasattr(self, '_meeting'):
-			self._meeting = Meeting.objects.select_related('organisation').get(
-				organisation=self.organisation, slug=self.kwargs['meeting_slug'])
-		return self._meeting
+	def organisation(self):
+		return Organisation.objects.get(slug=self.kwargs['organisation']).prefetch_related('managers')
+
+	def get_queryset(self):
+		return Meeting.objects.filter(organisation__slug=self.kwargs['organisation']).select_related('organisation')
+
+	def get_object(self):
+		m = super().get_object()
+		m._sessions = self.get_sessions()
+		return m
 
 	def create_point_tree(self):
 		"""Get all points for meeting and then treat as a tree with an
 		imaginary root. As the objects are shared (call by sharing without
 		copies), they can be grouped by their immediate parent to make a list of
 		children."""
-		points = Point.objects.filter(session__meeting=self.meeting).order_by('parent', 'seq')
+		points = Point.objects.filter(session__meeting__slug=self.kwargs['meeting'],
+			session__meeting__organisation__slug=self.kwargs['organisation']).order_by('parent', 'seq')
 		p_dict = {p.id: p for p in points}
 		for p in points:
 			p._children = []
@@ -106,7 +95,7 @@ class AgendaView(OrganisationMixin, TemplateView):
 					n_path.extend(point.subpoints[i:])
 					del point.subpoints[i:]
 					n_point._children = n_path
-					s_dict[n.session_id].points.append(n_point)
+					s_dict[n.session_id]._points.append(n_point)
 					break
 				else:
 					n_path = path.copy()
@@ -114,15 +103,85 @@ class AgendaView(OrganisationMixin, TemplateView):
 					dfs(n, current_session, n_path)
 
 		for s in sessions:
-			s.points = []
+			s._points = []
 		for n in tree:
-			s_dict[n.session_id].points.append(n)
+			s_dict[n.session_id]._points.append(n)
 			dfs(n, n.session_id, [n])
 
 		return s_dict.values()
 
-	def get_context_data(self, **kwargs):
-		context = super().get_context_data(**kwargs)
-		context['meeting'] = self.meeting
-		context['sessions'] = self.get_sessions()
-		return context
+
+class MinutesViewSet(ModelViewSet):
+	serializer_class = MinutesSerializer
+	lookup_field = 'slug'
+	lookup_url_kwarg = 'meeting'
+
+	def get_queryset(self):
+		return Meeting.objects.filter(organisation__slug=self.kwargs['organisation']).select_related('organisation').prefetch_related('session_set')
+
+	def get_object(self):
+		m = super().get_object()
+		m._points = self.get_points()
+		m.start_time = m.session_set.all().order_by('start').first().start
+		return m
+
+	def get_points(self):
+		"""Get all points for meeting and then treat as a tree with an
+		imaginary root. As the objects are shared (call by sharing without
+		copies), they can be grouped by their immediate parent to make a list of
+		children."""
+		points = Point.objects.filter(session__meeting__slug=self.kwargs['meeting'],
+			session__meeting__organisation__slug=self.kwargs['organisation']).order_by('parent', 'seq')
+		self.p_dict = {p.id: p for p in points}
+		for p in points:
+			p._children = []
+			p.interventions = []
+
+		root = []
+		for parent, children in groupby(points, key=lambda i: i.parent_id):
+			if parent is None:
+				root = list(children)
+				continue
+			self.p_dict[parent]._children = list(children)
+
+		for point, interventions in self.get_interventions().items():
+			self.p_dict[point].interventions = interventions
+
+		return root
+
+	def get_interventions(self):
+		interventions = Intervention.objects.filter(point__in=self.p_dict.values()).order_by('point', 'motion', 'seq').prefetch_related(
+			Prefetch('introduced_set', queryset=Motion.objects.all().prefetch_related('sponsors', 'vote_set').order_by('seq')))
+		m_dict = {}
+		for i in interventions:
+			i.introduced = list(i.introduced_set.all())
+			for m in i.introduced:
+				m.interventions = []
+				m_dict[m.id] = m
+
+		root = {}
+		for point, children in groupby(interventions, key=lambda i: i.point_id):
+			for motion, children_ in groupby(list(children), key=lambda i: i.motion_id):
+				ints = list(children_)
+
+				motion_order = 0
+				for child in ints:
+					for m in child.introduced:
+						motion_order += 1
+						m.order = motion_order
+
+				if motion is None:
+					root[point] = ints
+					continue
+				m_dict[motion].interventions = ints
+
+		return root
+
+
+class MeetingViewSet(AgendaViewSet):
+	serializer_class = MeetingSerializer
+	permission_classes = (OrgManagerOrReadOnlyPermission,)
+
+	def perform_create(self, serializer):
+		org = Organisation.objects.get(slug=self.kwargs['organisation'])
+		serializer.save(organisation=org)
