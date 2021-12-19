@@ -1,38 +1,13 @@
-from django.shortcuts import render
+from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
-from .forms import InterventionForm, MotionForm, VoteForm
+from .models import Participant
+from .serializers import ParticipantSerializer
 
-# Create your views here.
 
-def intervention_create_view(request):
-    form = InterventionForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        form = InterventionForm()
+class ParticipantViewSet(ModelViewSet):
+	serializer_class = ParticipantSerializer
+	lookup_field = 'slug'
+	lookup_url_kwarg = 'meeting'
 
-    context = {
-        'form': form
-    }
-    return render(request, "intervention_create.html", context)
-
-def motion_create_view(request):
-    form = MotionForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        form = MotionForm()
-
-    context = {
-        'form': form
-    }
-    return render(request, "motion_create.html", context)
-
-def vote_create_view(request):
-    form = VoteForm(request.POST or None)
-    if form.is_valid():
-        form.save()
-        form = VoteForm()
-
-    context = {
-        'form': form
-    }
-    return render(request, "vote_create.html", context)
+	def get_queryset(self):
+		return Participant.objects.filter(meeting__organisation__slug=self.kwargs['organisation']).prefetch_related('users')
