@@ -7,6 +7,7 @@ from motions.rulebooks import get_rulebook_choices, Lesperance
 
 class Organisation(models.Model):
 	name = models.CharField(max_length=100, unique=True, verbose_name=_("name"))
+	logo = models.FileField(null=True, blank=True, verbose_name=_("logo"))
 	slug = models.SlugField(max_length=20, unique=True, verbose_name=_("slug"))
 	active = models.BooleanField(default=True, verbose_name=_("active"))
 
@@ -87,3 +88,17 @@ class Point(models.Model):
 		if not hasattr(self, '_children'):
 			self._children = type(self).objects.filter(parent=self).order_by('seq')
 		return self._children
+
+
+def get_file_path(obj, name):
+	meeting = obj.point.session.meeting
+	return '{0}/{1}/{2}'.format(meeting.organisation.slug, meeting.slug, name)
+
+
+class PointFile(models.Model):
+	point = models.ForeignKey(Point, models.CASCADE, verbose_name=_("point"))
+	file = models.FileField(upload_to=get_file_path, verbose_name=_("file"))
+
+	class Meta:
+		verbose_name = _("point file")
+		verbose_name_plural = _("point files")
