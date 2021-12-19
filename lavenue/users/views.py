@@ -1,15 +1,9 @@
-from django.contrib.auth import login
-from django.urls import reverse_lazy
-from django.views.generic import CreateView
+from django.contrib.auth import get_user_model
+from rest_framework import generics
 
-from .forms import UserCreationForm
+from .serializers import UserSerializer
 
 
-class CreateAccountView(CreateView):
-	form_class = UserCreationForm
-	template_name = "create_account.html"
-
-	def form_valid(self, form):
-		user = form.save()
-		login(self.request, user)
-		return super().form_valid(form)
+class CreateUserView(generics.CreateAPIView):
+	queryset = get_user_model().objects.all()
+	serializer_class = UserSerializer
