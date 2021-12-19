@@ -40,6 +40,18 @@ class Meeting(models.Model):
 	def ended(self):
 		return not self.session_set.filter(ended_at__isnull=True).exists()
 
+	@property
+	def sessions(self):
+		if not hasattr(self, '_sessions'):
+			self._sessions = self.session_set.all()
+		return self._sessions
+
+	@property
+	def points(self):
+		if not hasattr(self, '_points'):
+			self._points = Point.objects.filter(session__meeting=self, parent__isnull=True)
+		return self._points
+
 
 class Session(models.Model):
 	meeting = models.ForeignKey(Meeting, models.CASCADE, verbose_name=_("meeting"))
@@ -56,6 +68,12 @@ class Session(models.Model):
 	class Meta:
 		verbose_name = _("session")
 		verbose_name_plural = _("sessions")
+
+	@property
+	def points(self):
+		if not hasattr(self, '_points'):
+			self._points = self.point_set.filter(parent__isnull=True)
+		return self._points
 
 
 class Point(models.Model):
@@ -88,6 +106,13 @@ class Point(models.Model):
 		if not hasattr(self, '_children'):
 			self._children = type(self).objects.filter(parent=self).order_by('seq')
 		return self._children
+
+	@property
+	def submotions(self):
+		from motions.models import Motion
+		if not hasattr(self, '_submotions'):
+			self._submotions = Motion.objects.filter(point=self, supplants__isnull=True).order_by('seq')
+		return self._submotions
 
 
 def get_file_path(obj, name):
