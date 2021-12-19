@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from organisations.models import Point
 
-from .models import *
+from .models import Ballot, Motion, Vote
 
 
 @admin.register(Motion)

@@ -1,7 +1,7 @@
 from django.contrib import admin
-from django.db.models import Prefetch
 
-from .models import *
+from .models import Meeting, Organisation, Point, Session
+
 
 @admin.register(Organisation)
 class OrganisationAdmin(admin.ModelAdmin):
@@ -12,11 +12,11 @@ class OrganisationAdmin(admin.ModelAdmin):
 
 
 class SessionInline(admin.TabularInline):
-		model = Session
-		fields = ('start', 'end')
+	model = Session
+	fields = ('start', 'end')
 
-		def get_queryset(self, request):
-			return super().get_queryset(request).select_related('meeting__organisation')
+	def get_queryset(self, request):
+		return super().get_queryset(request).select_related('meeting__organisation')
 
 
 @admin.register(Meeting)

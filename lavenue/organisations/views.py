@@ -1,22 +1,15 @@
-from copy import copy, deepcopy
+from copy import deepcopy
 from itertools import groupby
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Prefetch
-from django.urls import reverse
-from django.utils.translation import gettext as _
-from django.views.generic import CreateView, FormView, TemplateView
+from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.viewsets import ModelViewSet
 
 from motions.models import Motion
-from speakers.models import Intervention, Participant
-from utils.mixins import OrganisationManagerMixin, OrganisationMixin
+from speakers.models import Intervention
 
-from .forms import CreateMeetingForm, CreateOrganisationForm
 from .models import Meeting, Point, Session, Organisation
 from .serializers import AgendaSerializer, MinutesSerializer, MeetingSerializer
-
-from rest_framework.permissions import BasePermission, SAFE_METHODS
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 
 class OrgManagerOrReadOnlyPermission(BasePermission):

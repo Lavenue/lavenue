@@ -1,4 +1,4 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import UserPassesTestMixin
 from django.views.generic.base import ContextMixin
 
 from organisations.models import Organisation
@@ -29,7 +29,7 @@ class OrganisationMixin(ViewTitlesMixin):
 		if not hasattr(self, "_organisation"):
 			self._organisation = Organisation.objects.get(slug=self.kwargs['organisation_slug'])
 		return self._organisation
-	
+
 	def get_context_data(self, **kwargs):
 		kwargs['organisation'] = self.organisation
 		return super().get_context_data(**kwargs)

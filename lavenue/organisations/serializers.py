@@ -56,7 +56,7 @@ class BasePointSerializer(serializers.ModelSerializer):
 
 	class Meta:
 		model = Point
-		exclude = ('parent','session',)
+		exclude = ('parent', 'session')
 
 	def get_fields(self):
 		fields = super().get_fields()
@@ -124,7 +124,6 @@ class AgendaSerializer(serializers.ModelSerializer):
 			fields = super().get_fields()
 			fields['points'] = BasePointSerializer(many=True)
 			return fields
-
 
 	class Meta:
 		model = Meeting
