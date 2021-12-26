@@ -15,7 +15,7 @@ class Organisation(models.Model):
 	slug = models.SlugField(max_length=20, unique=True, verbose_name=_("slug"))
 	active = models.BooleanField(default=True, verbose_name=_("active"))
 
-	managers = models.ManyToManyField(settings.AUTH_USER_MODEL, verbose_name=_("managers"))
+	members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Membership', verbose_name=_("members"))
 
 	def __str__(self):
 		return self.name
@@ -25,11 +25,42 @@ class Organisation(models.Model):
 		verbose_name_plural = _("organisations")
 
 
+class Membership(models.Model):
+	ROLE_MANAGER = 'M'
+	ROLE_MEMBER = 'm'
+	ROLE_CHOICES = (
+		(ROLE_MANAGER, _("manager")),
+		(ROLE_MEMBER, _("member"))
+	)
+
+	user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE)
+	organisation = models.ForeignKey(Organisation, models.CASCADE)
+	role = models.CharField(max_length=1, choices=ROLE_CHOICES)
+
+	def __str__(self):
+		return "%s - %s" % (self.user, self.organisation)
+
+	class Meta:
+		verbose_name = _("membership")
+
+
 class Meeting(models.Model):
+	ACCESS_PUBLIC = 'p'
+	ACCESS_PARTICIPANT = 'P'
+	ACCESS_MANAGER = 'M'
+	ACCESS_MEMBER = 'm'
+	ACCESS_CHOICES = (
+		(ACCESS_PUBLIC, _("public")),
+		(ACCESS_PARTICIPANT, _("participant")),
+		(ACCESS_MANAGER, _("manager")),
+		(ACCESS_MEMBER, _("member")),
+	)
+
 	organisation = models.ForeignKey(Organisation, models.CASCADE, verbose_name=_("organisation"))
 	name = models.CharField(max_length=100, verbose_name=_("name"))
 	slug = models.SlugField(max_length=20, unique=True, verbose_name=_("slug"))
 	code = models.CharField(max_length=1, choices=get_rulebook_choices(), default=Lesperance.prefix, verbose_name=_("code"))
+	access = models.CharField(max_length=1, choices=ACCESS_CHOICES, default=ACCESS_MANAGER, verbose_name=_("access rule"))
 
 	def __str__(self):
 		return "%s: %s" % (self.organisation, self.name)
