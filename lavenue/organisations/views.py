@@ -9,7 +9,7 @@ from motions.models import Motion
 from speakers.models import Intervention
 
 from .models import Meeting, Point, Session, Organisation
-from .serializers import AgendaSerializer, MinutesSerializer, MeetingSerializer
+from .serializers import AgendaSerializer, MinutesSerializer, MeetingSerializer, OrganisationSerializer
 
 
 class OrgManagerOrReadOnlyPermission(BasePermission):
@@ -20,7 +20,10 @@ class OrgManagerOrReadOnlyPermission(BasePermission):
 
 
 class OrganisationViewSet(ModelViewSet):
-	pass
+	serializer_class = OrganisationSerializer
+	queryset = Organisation.objects.all()
+	lookup_field = 'slug'
+	lookup_url_kwarg = 'organisation'
 
 
 class BreakRecursionException(Exception):
@@ -34,7 +37,7 @@ class AgendaViewSet(ModelViewSet):
 
 	@property
 	def organisation(self):
-		return Organisation.objects.get(slug=self.kwargs['organisation']).prefetch_related('managers')
+		return Organisation.objects.prefetch_related('members').get(slug=self.kwargs['organisation'])
 
 	def get_queryset(self):
 		return Meeting.objects.filter(organisation__slug=self.kwargs['organisation']).select_related('organisation')
