@@ -5,9 +5,13 @@ from django.utils.translation import gettext_lazy as _
 from motions.rulebooks import get_rulebook_choices, Lesperance
 
 
+def get_logo_path(obj, name):
+	return '{0}/logo/{1}'.format(obj.slug, name)
+
+
 class Organisation(models.Model):
 	name = models.CharField(max_length=100, unique=True, verbose_name=_("name"))
-	logo = models.FileField(null=True, blank=True, verbose_name=_("logo"))
+	logo = models.FileField(upload_to=get_logo_path, null=True, blank=True, verbose_name=_("logo"))
 	slug = models.SlugField(max_length=20, unique=True, verbose_name=_("slug"))
 	active = models.BooleanField(default=True, verbose_name=_("active"))
 
