@@ -7,10 +7,12 @@ class Participant(models.Model):
 	ROLE_PRESIDENT = "p"
 	ROLE_SECRETARY = "s"
 	ROLE_MEMBER = "m"
+	ROLE_OBSERVER = "o"
 	ROLE_CHOICES = (
 		(ROLE_PRESIDENT, _("president")),
 		(ROLE_SECRETARY, _("secretary")),
 		(ROLE_MEMBER, _("member")),
+		(ROLE_OBSERVER, _("observer")),
 	)
 
 	meeting = models.ForeignKey('organisations.Meeting', models.CASCADE, verbose_name=_("meeting"))
