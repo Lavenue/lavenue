@@ -9,6 +9,7 @@ db.sqlite3-journal
 media
 venv/
 lavenue/staticfiles/
+lavenue/uploads/
 
 ### LaTeX ###
 ## Core latex/pdflatex auxiliary files:

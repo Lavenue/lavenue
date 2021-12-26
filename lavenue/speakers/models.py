@@ -38,7 +38,7 @@ class Intervention(models.Model):
 
 	time_asked = models.DateTimeField(auto_now=False, blank=True, null=True, verbose_name=_("time asked"))
 	time_granted = models.DateTimeField(auto_now=False, blank=True, null=True, verbose_name=_("time granted"))
-	seq = models.PositiveIntegerField(verbose_name=("sequence number"))
+	seq = models.PositiveIntegerField(blank=True, null=True, verbose_name=("sequence number"))
 
 	summary = models.TextField(blank=True, verbose_name=_("summary"))
 
