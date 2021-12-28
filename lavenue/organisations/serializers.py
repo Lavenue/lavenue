@@ -28,6 +28,7 @@ class MotionSerializer(serializers.ModelSerializer):
 
 	votes = VoteSerializer(many=True, source='vote_set')
 	order = serializers.IntegerField()
+	old_text = serializers.CharField()
 
 	class Meta:
 		model = Motion

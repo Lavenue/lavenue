@@ -28,6 +28,10 @@ class Motion(models.Model):
 		verbose_name = _("motion")
 		verbose_name_plural = _("motions")
 
+	@property
+	def old_text(self):
+		return getattr(self, "_old_text", "")
+
 
 class Vote(models.Model):
 	motion = models.ForeignKey(Motion, models.CASCADE, verbose_name=_("motion"))

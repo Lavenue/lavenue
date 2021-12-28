@@ -141,6 +141,10 @@ class MinutesViewSet(ModelViewSet):
 			self.p_dict[parent]._children = list(children)
 
 		for point, interventions in self.get_interventions().items():
+			for intervention in interventions:
+				for motion in intervention.introduced:
+					self.get_motion_old_text(motion, "")
+
 			self.p_dict[point].interventions = interventions
 
 		return root
@@ -172,6 +176,19 @@ class MinutesViewSet(ModelViewSet):
 				m_dict[motion].interventions = ints
 
 		return root
+
+	def get_motion_old_text(self, motion, old):
+		motion._old_text = old
+		old = motion.operative
+		for intervention in motion.interventions:
+			for m in intervention.introduced:
+				if m.proposition == 'l.M':
+					old = self.get_motion_old_text(m, old)
+				else:
+					self.get_motion_old_text(m, "")
+		if any(v.passed for v in motion.vote_set.all()):
+			return old
+		return motion._old_text
 
 
 class MeetingViewSet(AgendaViewSet):
