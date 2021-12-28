@@ -12,6 +12,11 @@ class ParticipantAdmin(admin.ModelAdmin):
 	def get_queryset(self, request):
 		return super().get_queryset(request).select_related('meeting__organisation')
 
+	def get_form(self, request, obj, **kwargs):
+		form = super().get_form(request, obj, **kwargs)
+		form.base_fields['meeting'].queryset = form.base_fields['meeting'].queryset.select_related('organisation')
+		return form
+
 
 @admin.register(Intervention)
 class InterventionAdmin(admin.ModelAdmin):
@@ -19,3 +24,9 @@ class InterventionAdmin(admin.ModelAdmin):
 
 	def get_queryset(self, request):
 		return super().get_queryset(request).select_related('participant')
+
+	def get_form(self, request, obj, **kwargs):
+		form = super().get_form(request, obj, **kwargs)
+		form.base_fields['point'].queryset = form.base_fields['point'].queryset.select_related('session__meeting__organisation')
+		form.base_fields['motion'].queryset = form.base_fields['motion'].queryset.select_related('proposer')
+		return form
