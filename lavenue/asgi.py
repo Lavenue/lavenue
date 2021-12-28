@@ -9,8 +9,20 @@ https://docs.djangoproject.com/en/3.2/howto/deployment/asgi/
 
 import os
 
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
 from django.core.asgi import get_asgi_application
+from django.urls import re_path
+
+from organisations.consumers import SpeakerRequestConsumer
+
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'settings')
 
-application = get_asgi_application()
+
+application = ProtocolTypeRouter({
+	"http": get_asgi_application(),
+	"websocket": AuthMiddlewareStack(URLRouter([
+		re_path(r'ws/(?P<organisation>\w+)/(?P<meeting>\w+)/order/$', SpeakerRequestConsumer.as_asgi()),
+	])),
+})
