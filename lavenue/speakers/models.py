@@ -34,10 +34,22 @@ class Participant(models.Model):
 
 
 class Intervention(models.Model):
+	PRIORITY_ORDER = 'O'
+	PRIORITY_PRIV = 'P'
+	PRIORITY_REGULAR = 'R'
+	PRIORITY_INFO = 'I'
+	PRIORITY_CHOICES = (
+		(PRIORITY_REGULAR, _("Ordinary")),
+		(PRIORITY_PRIV, _("Privileged")),
+		(PRIORITY_ORDER, _("Order")),
+		(PRIORITY_INFO, _("Information")),
+	)
 	participant = models.ForeignKey(Participant, models.PROTECT, verbose_name=_("participant"))
 	point = models.ForeignKey('organisations.Point', models.CASCADE, verbose_name=_("point"))
 	motion = models.ForeignKey('motions.Motion', models.CASCADE, blank=True, null=True, verbose_name=_("motion"))
 
+	priority = models.CharField(max_length=1, choices=PRIORITY_CHOICES, default=PRIORITY_REGULAR, blank=True,
+		verbose_name=_("priority"))
 	time_asked = models.DateTimeField(auto_now=False, blank=True, null=True, verbose_name=_("time asked"))
 	time_granted = models.DateTimeField(auto_now=False, blank=True, null=True, verbose_name=_("time granted"))
 	seq = models.PositiveIntegerField(blank=True, null=True, verbose_name=("sequence number"))
