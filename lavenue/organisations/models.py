@@ -1,4 +1,4 @@
-from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -15,7 +15,7 @@ class Organisation(models.Model):
 	slug = models.SlugField(max_length=20, unique=True, verbose_name=_("slug"))
 	active = models.BooleanField(default=True, verbose_name=_("active"))
 
-	members = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Membership', verbose_name=_("members"))
+	members = models.ManyToManyField(get_user_model(), through='Membership', verbose_name=_("members"))
 
 	def __str__(self):
 		return self.name
@@ -33,7 +33,7 @@ class Membership(models.Model):
 		(ROLE_MEMBER, _("member"))
 	)
 
-	user = models.ForeignKey(settings.AUTH_USER_MODEL, models.CASCADE)
+	user = models.ForeignKey(get_user_model(), models.CASCADE)
 	organisation = models.ForeignKey(Organisation, models.CASCADE)
 	role = models.CharField(max_length=1, choices=ROLE_CHOICES)
 
@@ -42,6 +42,30 @@ class Membership(models.Model):
 
 	class Meta:
 		verbose_name = _("membership")
+
+
+class Invitation(models.Model):
+	role_choices = None
+	default_role = None
+
+	email = models.EmailField(verbose_name=_("email address"))
+	role = models.CharField(max_length=1, choices=role_choices, default=default_role, verbose_name=_("role"))
+	key = models.CharField(max_length=100, verbose_name=_("key"))
+
+	class Meta:
+		verbose_name = _("invitation")
+		verbose_name_plural = _("invitations")
+		abstract = True
+
+
+class MembershipInvitation(Invitation):
+	role_choices = Membership.ROLE_CHOICES
+	default_role = Membership.ROLE_MEMBER
+	organisation = models.ForeignKey(Organisation, models.CASCADE, verbose_name=_("organisation"))
+
+	class Meta:
+		verbose_name = _("membership invitation")
+		verbose_name_plural = _("membership invitations")
 
 
 class Meeting(models.Model):

@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
+from organisations.models import Invitation
+
 
 class Participant(models.Model):
 	ROLE_PRESIDENT = "p"
@@ -64,3 +66,17 @@ class Intervention(models.Model):
 		verbose_name_plural = _("interventions")
 
 		unique_together = (('point', 'motion', 'seq'),)
+
+
+class ParticipantInvitation(Invitation):
+	role_choices = Participant.ROLE_CHOICES
+	default_role = Participant.ROLE_MEMBER
+	meeting = models.ForeignKey('organisations.Meeting', models.CASCADE, verbose_name=_("meeting"))
+	name = models.CharField(max_length=100, null=True, blank=True, verbose_name=_("name"))
+
+	class Meta:
+		verbose_name = _("participant invitation")
+		verbose_name_plural = _("participant invitations")
+		unique_together = (
+			('email', 'meeting'),
+		)
