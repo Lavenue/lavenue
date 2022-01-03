@@ -1,15 +1,12 @@
 from copy import deepcopy
 from itertools import groupby
 
-from django.db.models import Prefetch
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework.viewsets import ModelViewSet
 
-from motions.models import Motion
-from speakers.models import Intervention
-
 from .models import Meeting, Point, Session, Organisation
 from .serializers import AgendaSerializer, MinutesSerializer, MeetingSerializer, OrganisationSerializer
+from .tree import get_interventions, get_motion_old_text
 
 
 class OrgManagerOrReadOnlyPermission(BasePermission):
@@ -128,7 +125,7 @@ class MinutesViewSet(ModelViewSet):
 		children."""
 		points = Point.objects.filter(session__meeting__slug=self.kwargs['meeting'],
 			session__meeting__organisation__slug=self.kwargs['organisation']).order_by('parent', 'seq')
-		self.p_dict = {p.id: p for p in points}
+		p_dict = {p.id: p for p in points}
 		for p in points:
 			p._children = []
 			p.interventions = []
@@ -138,57 +135,16 @@ class MinutesViewSet(ModelViewSet):
 			if parent is None:
 				root = list(children)
 				continue
-			self.p_dict[parent]._children = list(children)
+			p_dict[parent]._children = list(children)
 
-		for point, interventions in self.get_interventions().items():
+		for point, interventions in get_interventions(p_dict.values()).items():
 			for intervention in interventions:
 				for motion in intervention.introduced:
-					self.get_motion_old_text(motion, "")
+					get_motion_old_text(motion, "")
 
-			self.p_dict[point].interventions = interventions
-
-		return root
-
-	def get_interventions(self):
-		interventions = Intervention.objects.filter(point__in=self.p_dict.values()).order_by('point', 'motion', 'seq').prefetch_related(
-			Prefetch('introduced_set', queryset=Motion.objects.all().prefetch_related('sponsors', 'vote_set').order_by('seq')))
-		m_dict = {}
-		for i in interventions:
-			i.introduced = list(i.introduced_set.all())
-			for m in i.introduced:
-				m.interventions = []
-				m_dict[m.id] = m
-
-		root = {}
-		for point, children in groupby(interventions, key=lambda i: i.point_id):
-			for motion, children_ in groupby(list(children), key=lambda i: i.motion_id):
-				ints = list(children_)
-
-				motion_order = 0
-				for child in ints:
-					for m in child.introduced:
-						motion_order += 1
-						m.order = motion_order
-
-				if motion is None:
-					root[point] = ints
-					continue
-				m_dict[motion].interventions = ints
+			p_dict[point].interventions = interventions
 
 		return root
-
-	def get_motion_old_text(self, motion, old):
-		motion._old_text = old
-		old = motion.operative
-		for intervention in motion.interventions:
-			for m in intervention.introduced:
-				if m.proposition == 'l.M':
-					old = self.get_motion_old_text(m, old)
-				else:
-					self.get_motion_old_text(m, "")
-		if any(v.passed for v in motion.vote_set.all()):
-			return old
-		return motion._old_text
 
 
 class MeetingViewSet(AgendaViewSet):
