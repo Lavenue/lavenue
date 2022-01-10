@@ -20,6 +20,16 @@ class ParticipantSerializer(serializers.ModelSerializer):
 		return p
 
 
+class InterventionWebsocketSerializer(serializers.ModelSerializer):
+	participant = relations.PrimaryKeyRelatedField(queryset=Participant.objects.all())
+	point = relations.PrimaryKeyRelatedField(queryset=Point.objects.all())
+	motion = relations.PrimaryKeyRelatedField(queryset=Motion.objects.all())
+
+	class Meta:
+		model = Intervention
+		fields = ('id', 'participant', 'point', 'motion', 'time_asked', 'seq')
+
+
 class InterventionSerializer(serializers.ModelSerializer):
 	participant = relations.PrimaryKeyRelatedField(queryset=Participant.objects.all())
 	point = relations.PrimaryKeyRelatedField(queryset=Point.objects.all())
