@@ -1,5 +1,6 @@
 from django.urls import include, path
 
+from motions.views import AdoptedMotionsViewSet
 from speakers.views import ParticipantViewSet
 
 from .views import AgendaViewSet, MinutesViewSet, MeetingViewSet
@@ -13,4 +14,5 @@ urlpatterns = [
 		path('', ParticipantViewSet.as_view({'get': 'list', 'post': 'create'})),
 		path('<int:pk>/', ParticipantViewSet.as_view({'get': 'retrieve'})),
 	])),
+	path('motions/', AdoptedMotionsViewSet.as_view({'get': 'retrieve'})),
 ]
