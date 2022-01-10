@@ -59,7 +59,7 @@ class Intervention(models.Model):
 	summary = models.TextField(blank=True, verbose_name=_("summary"))
 
 	def __str__(self):
-		return "%s: %s (%d)" % (self.participant, self.point, self.seq)
+		return "%s: %s (%d)" % (self.participant, self.point, self.seq or 0)
 
 	class Meta:
 		verbose_name = _("intervention")
