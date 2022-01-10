@@ -8,11 +8,16 @@ from .models import Intervention, Participant
 
 
 class ParticipantSerializer(serializers.ModelSerializer):
-	users = relations.SlugRelatedField(many=True, slug_field='email', queryset=get_user_model().objects.all())
+	# users = relations.SlugRelatedField(many=True, slug_field='email', queryset=get_user_model().objects.all())
 
 	class Meta:
 		model = Participant
-		fields = '__all__'
+		exclude = ('meeting', 'users')
+
+	def create(self, validated_data):
+		p = super().create(validated_data)
+		p.users.set([self.context['request'].user])
+		return p
 
 
 class InterventionSerializer(serializers.ModelSerializer):
