@@ -103,7 +103,7 @@ DATABASES = {
         'PASSWORD'    : 'tabbyadmin',  # put your PostgreSQL login role's password in here
         'HOST'        : 'localhost',
         'PORT'        : '5432',
-        'CONN_MAX_AGE': None,
+        'CONN_MAX_AGE': 0,
     }
 }
 
@@ -173,8 +173,8 @@ CORS_ALLOWED_ORIGINS = (
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
-        # 'rest_framework.renderers.BrowsableAPIRenderer',
         'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
     ),
     'DEFAULT_PARSER_CLASSES': (
         'rest_framework.parsers.JSONParser',
