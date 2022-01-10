@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Intervention, Participant
+from .models import Intervention, Participant, ParticipantInvitation
 
 
 @admin.register(Participant)
@@ -30,3 +30,11 @@ class InterventionAdmin(admin.ModelAdmin):
 		form.base_fields['point'].queryset = form.base_fields['point'].queryset.select_related('session__meeting__organisation')
 		form.base_fields['motion'].queryset = form.base_fields['motion'].queryset.select_related('proposer')
 		return form
+
+
+@admin.register(ParticipantInvitation)
+class ParticipantInvitationAdmin(admin.ModelAdmin):
+	list_display = ('email', 'meeting', 'role')
+
+	def get_queryset(self, request):
+		return super().get_queryset(request).select_related('meeting__organisation')

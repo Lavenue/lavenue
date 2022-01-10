@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Meeting, Organisation, Point, Session
+from .models import Meeting, Membership, MembershipInvitation, Organisation, Point, Session
 
 
 @admin.register(Organisation)
@@ -64,3 +64,21 @@ class PointAdmin(admin.ModelAdmin):
 		elif db_field.name == "parent":
 			kwargs['queryset'] = Point.objects.all().select_related('session__meeting__organisation')
 		return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
+@admin.register(Membership)
+class MembershipAdmin(admin.ModelAdmin):
+	list_display = ('user__username', 'organisation', 'role')
+	list_editable = ('role',)
+	list_filter = ('organisation',)
+
+	def get_queryset(self, request):
+		return super().get_queryset(request).select_related('user', 'organisation')
+
+
+@admin.register(MembershipInvitation)
+class MembershipInvitationAdmin(admin.ModelAdmin):
+	list_display = ('email', 'organisation', 'role')
+
+	def get_queryset(self, request):
+		return super().get_queryset(request).select_related('organisation')

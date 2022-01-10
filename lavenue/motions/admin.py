@@ -1,7 +1,5 @@
 from django.contrib import admin
 
-from organisations.models import Point
-
 from .models import Ballot, Motion, Vote
 
 
