@@ -4,7 +4,9 @@ from itertools import groupby
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework.viewsets import ModelViewSet
 
-from .models import Meeting, Point, Session, Organisation
+from speakers.models import Participant
+
+from .models import Meeting, Membership, Point, Session, Organisation
 from .serializers import AgendaSerializer, MinutesSerializer, MeetingSerializer, OrganisationSerializer
 from .tree import get_interventions, get_motion_old_text
 
@@ -13,7 +15,20 @@ class OrgManagerOrReadOnlyPermission(BasePermission):
 	message = "org.notmanager"
 
 	def has_permission(self, request, view):
-		return (request.user and view.organisation.managers.includes(request.user)) or request.method in SAFE_METHODS
+		return (
+			request.user.is_authenticated and Membership.objects.filter(
+				organisation=view.organisation, user=request.user, role=Membership.ROLE_MANAGER).exists()
+		) or request.method in SAFE_METHODS
+
+
+class SecretaryOnlyPermission(BasePermission):
+	message = "meeting.notsecretary"
+
+	def has_object_permission(self, request, view, obj):
+		return Participant.objects.filter(meeting=obj, user=request.user, role__in=[
+			Participant.ROLE_PRESIDENT,
+			Participant.ROLE_SECRETARY,
+		]).exists()
 
 
 class OrganisationViewSet(ModelViewSet):
