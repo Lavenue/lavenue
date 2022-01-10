@@ -80,7 +80,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'wsgi.application'
-ASGI_APPLICATION = 'routing.application'
+ASGI_APPLICATION = 'asgi.application'
 
 CHANNEL_LAYERS = {
     'default': {
