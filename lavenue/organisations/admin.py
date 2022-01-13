@@ -68,7 +68,7 @@ class PointAdmin(admin.ModelAdmin):
 
 @admin.register(Membership)
 class MembershipAdmin(admin.ModelAdmin):
-	list_display = ('user__username', 'organisation', 'role')
+	list_display = ('user', 'organisation', 'role')
 	list_editable = ('role',)
 	list_filter = ('organisation',)
 
