@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from motions.models import Motion, Vote
 from speakers.models import Intervention, Participant
+from speakers.serializers import InterventionWebsocketSerializer
 
 from .models import Meeting, Membership, MembershipInvitation, Organisation, Point, Session
 
@@ -184,4 +185,16 @@ class MinutesSerializer(serializers.ModelSerializer):
 	def get_fields(self):
 		fields = super().get_fields()
 		fields['points'] = self.PointSerializer(many=True)
+		return fields
+
+
+class PointSpeechOrderSerializer(serializers.ModelSerializer):
+
+	class Meta:
+		model = Point
+		fields = '__all__'
+
+	def get_fields(self):
+		fields = super().get_fields()
+		fields['interventions'] = InterventionWebsocketSerializer(many=True)
 		return fields

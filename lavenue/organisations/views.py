@@ -1,13 +1,14 @@
 from copy import deepcopy
 from itertools import groupby
 
+from django.db.models import F, Prefetch
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 from rest_framework.viewsets import ModelViewSet
 
-from speakers.models import Participant
+from speakers.models import Intervention, Participant
 
 from .models import Meeting, Membership, Point, Session, Organisation
-from .serializers import AgendaSerializer, MinutesSerializer, MeetingSerializer, OrganisationSerializer
+from .serializers import AgendaSerializer, MinutesSerializer, MeetingSerializer, OrganisationSerializer, PointSpeechOrderSerializer
 from .tree import get_interventions, get_motion_old_text
 
 
@@ -169,3 +170,13 @@ class MeetingViewSet(AgendaViewSet):
 	def perform_create(self, serializer):
 		org = Organisation.objects.get(slug=self.kwargs['organisation'])
 		serializer.save(organisation=org)
+
+
+class CurrentSpeakingRequestsView(ModelViewSet):
+	serializer_class = PointSpeechOrderSerializer
+
+	def get_queryset(self):
+		return Point.objects.filter(
+			session__meeting__slug=self.kwargs['meeting'],
+		).prefetch_related(Prefetch('intervention_set', to_attr="interventions",
+			queryset=Intervention.objects.filter(motion=None).order_by(F('seq').asc(nulls_last=True), 'time_asked')))

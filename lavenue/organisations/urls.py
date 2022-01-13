@@ -3,7 +3,7 @@ from django.urls import include, path
 from motions.views import AdoptedMotionsViewSet
 from speakers.views import ParticipantViewSet
 
-from .views import AgendaViewSet, MinutesViewSet, MeetingViewSet
+from .views import AgendaViewSet, CurrentSpeakingRequestsView, MinutesViewSet, MeetingViewSet
 
 
 urlpatterns = [
@@ -15,4 +15,8 @@ urlpatterns = [
 		path('<int:pk>/', ParticipantViewSet.as_view({'get': 'retrieve'})),
 	])),
 	path('motions/', AdoptedMotionsViewSet.as_view({'get': 'retrieve'})),
+	path('points/', include([
+		path('', CurrentSpeakingRequestsView.as_view({'get': 'list'})),
+		path('<int:pk>/', CurrentSpeakingRequestsView.as_view({'get': 'retrieve'})),
+	]))
 ]
