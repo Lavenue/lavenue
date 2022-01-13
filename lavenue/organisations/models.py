@@ -50,7 +50,6 @@ class Invitation(models.Model):
 
 	email = models.EmailField(verbose_name=_("email address"))
 	role = models.CharField(max_length=1, choices=role_choices, default=default_role, verbose_name=_("role"))
-	key = models.CharField(max_length=100, verbose_name=_("key"))
 
 	class Meta:
 		verbose_name = _("invitation")
