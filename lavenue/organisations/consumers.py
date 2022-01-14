@@ -102,7 +102,7 @@ class SpeakerRequestConsumer(JsonWebsocketConsumer):
 			'action': 'remove_from_list',
 			'intervention': {
 				'point': point.pk,
-				'motion': getattr(motion, 'pk'),
+				'motion': getattr(motion, 'pk', None),
 				'participant': participant.pk,
 			},
 		})
@@ -120,7 +120,7 @@ class SpeakerRequestConsumer(JsonWebsocketConsumer):
 		self.send_json(content={
 			'action': 'clear_list',
 			'point': point.pk,
-			'motion': getattr(motion, 'pk'),
+			'motion': getattr(motion, 'pk', None),
 		})
 
 	def give_floor(self, event):
