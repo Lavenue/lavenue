@@ -125,14 +125,17 @@ class SpeakerRequestConsumer(JsonWebsocketConsumer):
 
 	def give_floor(self, event):
 		if not self.is_super:
+			self.send_json(content={'error': 'Not super'})
 			return
 
 		participant = self.get_participant(event['participant'])
 		if participant is None:
+			self.send_json(content={'error': 'No part'})
 			return
 
 		point, motion = self.get_list(event['point'], event['motion'])
 		if point is None:
+			self.send_json(content={'error': 'No point'})
 			return
 
 		try:
