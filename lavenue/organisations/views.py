@@ -65,7 +65,7 @@ class AgendaViewSet(ModelViewSet):
 		imaginary root. As the objects are shared (call by sharing without
 		copies), they can be grouped by their immediate parent to make a list of
 		children."""
-		points = Point.objects.filter(session__meeting__slug=self.kwargs['meeting'],
+		points = Point.objects.filter(seq__isnull=False, session__meeting__slug=self.kwargs['meeting'],
 			session__meeting__organisation__slug=self.kwargs['organisation']).order_by('parent', 'seq')
 		p_dict = {p.id: p for p in points}
 		for p in points:
@@ -139,7 +139,7 @@ class MinutesViewSet(ModelViewSet):
 		imaginary root. As the objects are shared (call by sharing without
 		copies), they can be grouped by their immediate parent to make a list of
 		children."""
-		points = Point.objects.filter(session__meeting__slug=self.kwargs['meeting'],
+		points = Point.objects.filter(seq__isnull=False, session__meeting__slug=self.kwargs['meeting'],
 			session__meeting__organisation__slug=self.kwargs['organisation']).order_by('parent', 'seq')
 		p_dict = {p.id: p for p in points}
 		for p in points:

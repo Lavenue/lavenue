@@ -137,7 +137,7 @@ class Session(models.Model):
 class Point(models.Model):
 	session = models.ForeignKey(Session, models.CASCADE, verbose_name=_("session"))
 	parent = models.ForeignKey('self', models.CASCADE, null=True, blank=True, verbose_name=_("parent point"))
-	seq = models.PositiveIntegerField(verbose_name=_("sequence number"))
+	seq = models.PositiveIntegerField(null=True, verbose_name=_("sequence number"))
 
 	name = models.CharField(max_length=150, verbose_name=_("name"))
 
