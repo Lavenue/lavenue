@@ -34,7 +34,7 @@ class InterventionSerializer(serializers.ModelSerializer):
 	participant = relations.PrimaryKeyRelatedField(queryset=Participant.objects.all())
 	point = relations.PrimaryKeyRelatedField(queryset=Point.objects.all())
 	motion = relations.PrimaryKeyRelatedField(queryset=Motion.objects.all())
-	motions = relations.PrimaryKeyRelatedField(many=True, source='motion_set', queryset=Motion.objects.all())
+	motions = relations.PrimaryKeyRelatedField(many=True, source='introduced_set', queryset=Motion.objects.all())
 
 	class Meta:
 		model = Intervention
