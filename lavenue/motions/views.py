@@ -5,7 +5,16 @@ from rest_framework.viewsets import ModelViewSet
 from organisations.models import Meeting, Point
 from organisations.tree import get_interventions, get_motion_adopted_text, get_point_full_num, get_point_motions_full_num
 
-from .serializers import ApprovedMotionsSerializer
+from .models import Motion
+from .serializers import EditMotionSerializer, ApprovedMotionsSerializer
+
+
+class EditMotionViewSet(ModelViewSet):
+	serializer_class = EditMotionSerializer
+
+	def get_queryset(self):
+		return Motion.objects.filter(point__session__meeting__slug=self.kwargs['meeting'],
+			point__session__meeting__organisation__slug=self.kwargs['organisation'])
 
 
 class AdoptedMotionsViewSet(ModelViewSet):

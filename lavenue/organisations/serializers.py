@@ -157,6 +157,19 @@ class AgendaSerializer(serializers.ModelSerializer):
 			fields['points'] = BasePointSerializer(many=True)
 			return fields
 
+		def save(self, **kwargs):
+			points = kwargs.pop('points')
+			session = super().save(**kwargs)
+
+			session.point_set.update(seq=None)
+			point_serializer = BasePointSerializer(many=True, context=self.context)
+			point_serializer._validated_data = points
+			point_serializer.save(session=session)
+
+			session.point_set.filter(seq=None).delete()
+
+			return session
+
 	class Meta:
 		model = Meeting
 		fields = '__all__'
@@ -166,6 +179,15 @@ class AgendaSerializer(serializers.ModelSerializer):
 		fields['sessions'] = self.SessionSerializer(many=True)
 		return fields
 
+	def update(self, instance, validated_data):
+		sessions = validated_data.pop('sessions')
+		if sessions is not None and self.partial:
+			instance.point_set.update(seq=None)
+			session_serializer = self.SessionSerializer(many=True, context=self.context)
+			session_serializer._validated_data = sessions
+			session_serializer.save(meeting=instance)
+
+		return super().update(instance, validated_data)
 
 class MinutesSerializer(serializers.ModelSerializer):
 
@@ -186,6 +208,41 @@ class MinutesSerializer(serializers.ModelSerializer):
 		fields = super().get_fields()
 		fields['points'] = self.PointSerializer(many=True)
 		return fields
+
+
+class TreeMotionSerializer(serializers.ModelSerializer):
+	votes = VoteSerializer(many=True, source='vote_set')
+	order = serializers.IntegerField()
+	old_text = serializers.CharField()
+
+	class Meta:
+		model = Motion
+		exclude = ('proposer', 'supplants', 'introduced', 'preamble')
+
+	def get_fields(self):
+		fields = super().get_fields()
+		fields['interventions'] = TreeSpeechSerializer(many=True)
+		return fields
+
+
+class TreeSpeechSerializer(serializers.ModelSerializer):
+	class Meta:
+		model = Intervention
+		exclude = ('point', 'motion', 'time_asked', 'time_granted', 'summary')
+
+	def get_fields(self):
+		fields = super().get_fields()
+		fields['introduced'] = TreeMotionSerializer(many=True)
+		return fields
+
+
+class InterventionTreeSerializer(MinutesSerializer):
+
+	class PointSerializer(BasePointSerializer):
+		def get_fields(self):
+			fields = super().get_fields()
+			fields['interventions'] = TreeSpeechSerializer(many=True)
+			return fields
 
 
 class PointSpeechOrderSerializer(serializers.ModelSerializer):

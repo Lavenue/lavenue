@@ -8,7 +8,8 @@ from rest_framework.viewsets import ModelViewSet
 from speakers.models import Intervention, Participant
 
 from .models import Meeting, Membership, Point, Session, Organisation
-from .serializers import AgendaSerializer, MinutesSerializer, MeetingSerializer, OrganisationSerializer, PointSpeechOrderSerializer
+from .serializers import (AgendaSerializer, InterventionTreeSerializer,
+	MinutesSerializer, MeetingSerializer, OrganisationSerializer, PointSpeechOrderSerializer)
 from .tree import get_interventions, get_motion_old_text
 
 
@@ -163,6 +164,10 @@ class MinutesViewSet(ModelViewSet):
 		return root
 
 
+class InterventionTreeViewSet(MinutesViewSet):
+	serializer_class = InterventionTreeSerializer
+
+
 class MeetingViewSet(AgendaViewSet):
 	serializer_class = MeetingSerializer
 	permission_classes = (OrgManagerOrReadOnlyPermission,)
@@ -176,7 +181,7 @@ class CurrentSpeakingRequestsView(ModelViewSet):
 	serializer_class = PointSpeechOrderSerializer
 
 	def get_queryset(self):
-		return Point.objects.filter(
+		return Point.objects.filter(seq__isnull=False,
 			session__meeting__slug=self.kwargs['meeting'],
 		).prefetch_related(Prefetch('intervention_set', to_attr="interventions",
 			queryset=Intervention.objects.filter(motion=None).order_by(F('seq').asc(nulls_last=True), 'time_asked')))

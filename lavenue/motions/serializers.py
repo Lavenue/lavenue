@@ -2,7 +2,7 @@ from rest_framework import serializers, relations
 
 from organisations.models import Meeting
 from organisations.serializers import BasePointSerializer
-from speakers.models import Participant
+from speakers.models import Intervention, Participant
 
 from .models import Motion, Vote
 
@@ -15,6 +15,7 @@ class VoteSerializer(serializers.ModelSerializer):
 
 class MotionSerializer(serializers.ModelSerializer):
 	proposer = relations.PrimaryKeyRelatedField(queryset=Participant.objects.all())
+	introduced = relations.PrimaryKeyRelatedField(queryset=Intervention.objects.all())
 	sponsors = relations.PrimaryKeyRelatedField(many=True, queryset=Participant.objects.all())
 
 	class Meta:
@@ -23,8 +24,23 @@ class MotionSerializer(serializers.ModelSerializer):
 
 	def get_fields(self):
 		fields = super().get_fields()
-		fields['submotions'] = MotionSerializer(many=True)
+		fields['submotions'] = MotionSerializer(many=True, read_only=True)
 		return fields
+
+
+class EditMotionSerializer(serializers.ModelSerializer):
+	introduced = relations.PrimaryKeyRelatedField(queryset=Intervention.objects.all())
+	sponsors = relations.PrimaryKeyRelatedField(many=True, queryset=Participant.objects.all())
+
+	class Meta:
+		model = Motion
+		exclude = ('point', 'supplants',)
+
+	def create(self, validated_data):
+		validated_data['point'] = validated_data['introduced'].point
+		validated_data['proposer'] = validated_data['introduced'].participant
+
+		return super().create(validated_data)
 
 
 class ApprovedMotionsSerializer(serializers.ModelSerializer):
