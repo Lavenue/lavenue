@@ -98,9 +98,9 @@ CHANNEL_LAYERS = {
 DATABASES = {
     'default': {
         'ENGINE'      : 'django.db.backends.postgresql',
-        'NAME'        : 'lavenue',  # put your PostgreSQL database's name in here
-        'USER'        : 'tc',  # put your PostgreSQL login role's user name in here
-        'PASSWORD'    : 'tabbyadmin',  # put your PostgreSQL login role's password in here
+        'NAME'        : '',  # put your PostgreSQL database's name in here
+        'USER'        : '',  # put your PostgreSQL login role's user name in here
+        'PASSWORD'    : '',  # put your PostgreSQL login role's password in here
         'HOST'        : 'localhost',
         'PORT'        : '5432',
         'CONN_MAX_AGE': 0,
